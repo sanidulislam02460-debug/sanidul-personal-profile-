@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your Name — Personal Profile</title>
+<meta name="description" content="Personal profile, writings, projects, achievements and contact information.">
+<meta name="robots" content="index,follow">
+<meta property="og:title" content="Your Name — Personal Profile"><meta property="og:description" content="Personal profile and portfolio.">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f7eee9;color:#202124;line-height:1.6}a{color:inherit}.top{position:sticky;top:0;z-index:5;background:#171717;color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between}.brand{font-weight:800}.nav a{margin-left:12px;text-decoration:none;font-size:13px}.hero{text-align:center;padding:55px 18px;background:linear-gradient(135deg,#eadbd5,#fff)}.avatar{width:120px;height:120px;border-radius:50%;object-fit:cover;border:5px solid #fff;box-shadow:0 8px 25px #0002}.hero h1{font-size:38px;margin:15px 0 4px}.muted{color:#666}.wrap{max-width:950px;margin:auto;padding:18px}.card{background:#fff;border-radius:18px;padding:24px;margin:18px 0;box-shadow:0 5px 25px #0000000d}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.item{border:1px solid #eee;border-radius:13px;padding:15px;background:#fafafa}.gallery{width:100%;height:190px;object-fit:cover;border-radius:12px}.admin{display:none}.btn{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:#222;color:#fff}.btn.light{background:#eee;color:#222}.field{margin:10px 0}.field label{display:block;font-weight:700;margin-bottom:4px}.field input,.field textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:9px;font:inherit}.field textarea{min-height:90px}footer{background:#171717;color:#ddd;text-align:center;padding:28px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;display:none}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand" id="brand">P</div><nav class="nav"><a href="#about">About</a><a href="#writing">Writing</a><a href="#projects">Projects</a><a href="#achievements">Achievements</a><a href="#gallery">Gallery</a><a href="#contact">Contact</a></nav></header>
+<section class="hero"><img id="photo" class="avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300" alt="Profile photo"><h1 id="name">Your Name</h1><p id="tagline" class="muted">Your identity. Your story. Your own space on the internet.</p></section>
+<main class="wrap">
+<section id="about" class="card"><h2>👤 About Me</h2><p id="aboutText"></p></section>
+<section id="writing" class="card"><h2>✍️ Quotes & Writings</h2><div id="writingGrid" class="grid"></div></section>
+<section id="projects" class="card"><h2>📚 Books & Projects</h2><div id="projectGrid" class="grid"></div></section>
+<section id="achievements" class="card"><h2>🏆 Achievements</h2><div id="achievementGrid" class="grid"></div></section>
+<section id="gallery" class="card"><h2>📸 Gallery</h2><div id="galleryGrid" class="grid"></div></section>
+<section id="contact" class="card"><h2>✉️ Contact</h2><p id="contactText"></p></section>
+<section id="login" class="card"><h2>🔐 Owner Control</h2><p class="muted">Private admin login. Visitors cannot edit your profile.</p><div id="loginBox"><div class="field"><label>Email</label><input id="email" type="email"></div><div class="field"><label>Password</label><input id="password" type="password"></div><button class="btn" onclick="login()">Login</button></div><div id="admin" class="admin"><p>Logged in as owner.</p><div class="field"><label>Name</label><input id="aName"></div><div class="field"><label>Tagline</label><input id="aTagline"></div><div class="field"><label>Profile Photo URL</label><input id="aPhoto"></div><div class="field"><label>About</label><textarea id="aAbout"></textarea></div><div class="field"><label>Contact (one line per item)</label><textarea id="aContact"></textarea></div><div class="field"><label>Quotes/Writings (one per line)</label><textarea id="aWriting"></textarea></div><div class="field"><label>Projects (one per line)</label><textarea id="aProjects"></textarea></div><div class="field"><label>Achievements (one per line)</label><textarea id="aAchievements"></textarea></div><div class="field"><label>Gallery image URLs (one per line)</label><textarea id="aGallery"></textarea></div><button class="btn" onclick="saveProfile()">Save Changes</button> <button class="btn light" onclick="logout()">Logout</button></div></section>
+</main><footer>© <span id="year"></span> <span id="footerName">Your Name</span> · Personal Profile</footer><div id="toast" class="toast"></div>
+<script>
+const SUPABASE_URL='YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_KEY';
+let sb=null;
+const defaults={name:'Your Name',tagline:'Your identity. Your story. Your own space on the internet.',photo:'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300',about:'Write your biography, education, profession and personal introduction here.',contact:['Email: your@email.com','Instagram: @yourusername','YouTube: Your Channel'],writing:['Dreaming • Growing • Becoming','Make memories, not explanations.'],projects:['My First Project','My Notes / Publications'],achievements:['Certificate / Award','Academic Milestone','New Skill'],gallery:['https://images.unsplash.com/photo-1500534623283-312aade485b7?w=800','https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800']};
+let data={...defaults};
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function lines(v){return v.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)}
+function render(){name.textContent=data.name;footerName.textContent=data.name;brand.textContent=(data.name||'P').slice(0,1).toUpperCase();tagline.textContent=data.tagline;aboutText.textContent=data.about;photo.src=data.photo;contactText.innerHTML=data.contact.map(esc).join('<br>');writingGrid.innerHTML=data.writing.map(x=>`<div class="item">“${esc(x)}”</div>`).join('');projectGrid.innerHTML=data.projects.map(x=>`<div class="item">📘 ${esc(x)}</div>`).join('');achievementGrid.innerHTML=data.achievements.map(x=>`<div class="item">🏅 ${esc(x)}</div>`).join('');galleryGrid.innerHTML=data.gallery.map(x=>`<img class="gallery" src="${esc(x)}" alt="Gallery image">`).join('');year.textContent=new Date().getFullYear();document.title=`${data.name} — Personal Profile`}
+async function load(){if(SUPABASE_URL.startsWith('YOUR_')){render();return}sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:r,error}=await sb.from('profile').select('*').eq('id',1).single();if(!error&&r)data=r;render()}
+async function login(){if(!sb)return alert('First connect Supabase: replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY in index.html.');const {error}=await sb.auth.signInWithPassword({email:email.value,password:password.value});if(error)return alert(error.message);openAdmin()}
+async function openAdmin(){const {data:u}=await sb.auth.getUser();if(!u.user)return;loginBox.style.display='none';admin.style.display='block';aName.value=data.name;aTagline.value=data.tagline;aPhoto.value=data.photo;aAbout.value=data.about;aContact.value=data.contact.join('\n');aWriting.value=data.writing.join('\n');aProjects.value=data.projects.join('\n');aAchievements.value=data.achievements.join('\n');aGallery.value=data.gallery.join('\n')}
+async function saveProfile(){const next={id:1,name:aName.value,tagline:aTagline.value,photo:aPhoto.value,about:aAbout.value,contact:lines(aContact.value),writing:lines(aWriting.value),projects:lines(aProjects.value),achievements:lines(aAchievements.value),gallery:lines(aGallery.value)};const {error}=await sb.from('profile').upsert(next);if(error)return alert(error.message);data=next;render();toast('Saved successfully')}
+async function logout(){await sb.auth.signOut();loginBox.style.display='block';admin.style.display='none'}
+load();
+</script>
+</body></html>
